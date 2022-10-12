@@ -5,6 +5,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Literal, Tuple, Union
 from uuid import uuid4
+from collections import defaultdict
 
 import httpx
 
@@ -42,6 +43,9 @@ def request_to_investing(
     d = r.json()
 
     if endpoint == "history" and d["s"] != "ok":
+        # if there is no data for this particular time interval, return an empty dict
+        if d['s'] == 'no_data': return defaultdict(list)
+
         raise ConnectionError(
             f"Request to Investing.com API failed with error message: {d['s']}."
             if "nextTime" not in d
